@@ -115,4 +115,9 @@ public final class JugglingObjectsNetworking {
             stack.setTag(null);
         }
     }
+
+    public static boolean isJugglingItem(ItemStack stack) {
+        CompoundTag tag = stack.getTag();
+        return tag != null && tag.hasUUID(JUGGLE_TAG);
+    }
 }
