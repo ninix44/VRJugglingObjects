@@ -1,5 +1,6 @@
 package org.vmstudio.jugglingobjects.core.client.tasks;
 
+import io.netty.buffer.Unpooled;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.FriendlyByteBuf;
@@ -8,21 +9,21 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-import io.netty.buffer.Unpooled;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3f;
 import org.joml.Vector3fc;
+import org.vmstudio.jugglingobjects.core.common.AddonUtils;
 import org.vmstudio.jugglingobjects.core.common.JugglingObjectsNetworking;
 import org.vmstudio.jugglingobjects.core.network.NetworkHelper;
 import org.vmstudio.visor.api.VisorAPI;
+import org.vmstudio.visor.api.client.gui.overlays.VROverlay;
 import org.vmstudio.visor.api.client.player.VRLocalPlayer;
 import org.vmstudio.visor.api.client.player.pose.PlayerPoseClient;
 import org.vmstudio.visor.api.client.player.pose.PlayerPoseType;
 import org.vmstudio.visor.api.client.tasks.RegisterVisorTask;
 import org.vmstudio.visor.api.client.tasks.TaskType;
 import org.vmstudio.visor.api.client.tasks.VisorTask;
-import org.vmstudio.visor.api.client.gui.overlays.VROverlay;
 import org.vmstudio.visor.api.common.HandType;
 import org.vmstudio.visor.api.common.addon.VisorAddon;
 
@@ -39,7 +40,6 @@ public class TaskJuggleItems extends VisorTask {
     private static final double TOSS_THRESHOLD = 0.15;
     private static final double PULL_RANGE = 0.8;
     private static final double CATCH_RANGE = 0.25;
-    private static final int TRAIL_INTERVAL = 3;
 
     private Vec3 lastRelMain;
     private Vec3 lastRelOff;
@@ -58,7 +58,12 @@ public class TaskJuggleItems extends VisorTask {
         }
 
         if (isGuiInteractionBlocked(mc)) {
-            onClear(player);
+            resetTracking();
+            return;
+        }
+
+        if (!AddonUtils.canJuggle(player)) {
+            resetTracking();
             return;
         }
 
@@ -84,10 +89,7 @@ public class TaskJuggleItems extends VisorTask {
 
     @Override
     protected void onClear(@Nullable LocalPlayer player) {
-        lastRelMain = null;
-        lastRelOff = null;
-        mainCooldown = 0;
-        offCooldown = 0;
+        resetTracking();
     }
 
     @Override
@@ -256,6 +258,13 @@ public class TaskJuggleItems extends VisorTask {
         } else {
             offCooldown = ticks;
         }
+    }
+
+    private void resetTracking() {
+        lastRelMain = null;
+        lastRelOff = null;
+        mainCooldown = 0;
+        offCooldown = 0;
     }
 
     private Vec3 getRelativeHandPosition(PlayerPoseClient poseRel, boolean isMainHand) {

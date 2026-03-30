@@ -42,6 +42,10 @@ public final class JugglingObjectsNetworking {
             int entityId = buf.readInt();
             boolean isMainHand = buf.readBoolean();
 
+            if (!AddonUtils.canJuggle(player)) {
+                return;
+            }
+
             Entity entity = player.level().getEntity(entityId);
             if (!(entity instanceof ItemEntity itemEntity)) {
                 return;
@@ -73,6 +77,10 @@ public final class JugglingObjectsNetworking {
                                         double vx,
                                         double vy,
                                         double vz) {
+        if (!AddonUtils.canJuggle(player)) {
+            return;
+        }
+
         InteractionHand hand = isMainHand ? InteractionHand.MAIN_HAND : InteractionHand.OFF_HAND;
         ItemStack handStack = player.getItemInHand(hand);
         if (handStack.isEmpty()) {
@@ -89,11 +97,11 @@ public final class JugglingObjectsNetworking {
         Vec3 velocity = new Vec3(vx, vy, vz);
         Vec3 spawnOffset = velocity.lengthSqr() > 1.0E-5 ? velocity.normalize().scale(0.18) : Vec3.ZERO;
 
-        ItemEntity itemEntity = new ItemEntity(player.level(), hx + spawnOffset.x, hy + 0.1 + spawnOffset.y, hz + spawnOffset.z, thrownStack);
+        ItemEntity itemEntity = new ItemEntity(player.level(), hx + spawnOffset.x, hy + 0.1D + spawnOffset.y, hz + spawnOffset.z, thrownStack);
         itemEntity.setDeltaMovement(
-                velocity.x * 0.55,
-                Math.max(velocity.y * 1.2, 0.4),
-                velocity.z * 0.55
+                velocity.x * 0.55D,
+                Math.max(velocity.y * 1.2D, 0.4D),
+                velocity.z * 0.55D
         );
         itemEntity.setPickUpDelay(40);
         player.level().addFreshEntity(itemEntity);
