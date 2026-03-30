@@ -2,15 +2,10 @@ package org.vmstudio.jugglingobjects.core.client.tasks;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.core.particles.DustParticleOptions;
-import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.sounds.SoundEvents;
-import net.minecraft.tags.ItemTags;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.item.ItemEntity;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import io.netty.buffer.Unpooled;
@@ -83,7 +78,6 @@ public class TaskJuggleItems extends VisorTask {
         }
 
         handleToss(mc, poseTick, poseRel, InteractionHand.MAIN_HAND, HandType.MAIN, true);
-        renderJugglingTrails(mc, player);
         handleToss(mc, poseTick, poseRel, InteractionHand.OFF_HAND, HandType.OFFHAND, false);
         handleCatching(mc, poseTick);
     }
@@ -214,212 +208,6 @@ public class TaskJuggleItems extends VisorTask {
             } else if (item.isNoGravity()) {
                 item.setNoGravity(false);
             }
-        }
-    }
-
-    private void renderJugglingTrails(Minecraft mc, LocalPlayer player) {
-        if (mc.level == null) {
-            return;
-        }
-
-        AABB searchBox = player.getBoundingBox().inflate(6.0);
-        for (ItemEntity item : mc.level.getEntitiesOfClass(ItemEntity.class, searchBox)) {
-            if (!JugglingObjectsNetworking.isJugglingItem(item.getItem())) {
-                continue;
-            }
-
-            spawnTrailParticles(mc, item);
-        }
-    }
-
-    private void spawnTrailParticles(Minecraft mc, ItemEntity item) {
-        if (item.onGround()) {
-            return;
-        }
-
-        if (item.getDeltaMovement().lengthSqr() < 0.0025) {
-            return;
-        }
-
-        if (item.tickCount % TRAIL_INTERVAL != 0) {
-            return;
-        }
-
-        Vec3 pos = item.position();
-        Vec3 velocity = item.getDeltaMovement();
-        double px = pos.x + (mc.level.random.nextDouble() - 0.5) * 0.08;
-        double py = pos.y + 0.1 + (mc.level.random.nextDouble() - 0.5) * 0.08;
-        double pz = pos.z + (mc.level.random.nextDouble() - 0.5) * 0.08;
-
-        ItemStack stack = item.getItem();
-
-        if (stack.is(Items.TORCH) || stack.is(Items.CAMPFIRE) || stack.is(Items.LANTERN)) {
-            mc.level.addParticle(ParticleTypes.FLAME, px, py, pz, 0.0, 0.005, 0.0);
-            if (item.tickCount % 6 == 0) {
-                mc.level.addParticle(ParticleTypes.SMOKE, px, py, pz, 0.0, 0.01, 0.0);
-            }
-            return;
-        }
-
-        if (stack.is(Items.SOUL_TORCH) || stack.is(Items.SOUL_LANTERN) || stack.is(Items.SOUL_CAMPFIRE)) {
-            mc.level.addParticle(ParticleTypes.SOUL_FIRE_FLAME, px, py, pz, 0.0, 0.005, 0.0);
-            if (item.tickCount % 6 == 0) {
-                mc.level.addParticle(ParticleTypes.SMOKE, px, py, pz, 0.0, 0.008, 0.0);
-            }
-            return;
-        }
-
-        if (stack.is(Items.SNOWBALL) || stack.is(Items.SNOW_BLOCK) || stack.is(Items.POWDER_SNOW_BUCKET)) {
-            mc.level.addParticle(ParticleTypes.SNOWFLAKE, px, py, pz, 0.0, 0.01, 0.0);
-            if (item.tickCount % 6 == 0) {
-                mc.level.addParticle(ParticleTypes.ITEM_SNOWBALL, px, py, pz, 0.0, 0.01, 0.0);
-            }
-            return;
-        }
-
-        if (stack.is(Items.SLIME_BALL)) {
-            mc.level.addParticle(new DustParticleOptions(new Vector3f(0.45f, 0.9f, 0.35f), 1.0f), px, py, pz, 0.0, 0.0, 0.0);
-            return;
-        }
-
-        if (stack.is(Items.MAGMA_CREAM)) {
-            mc.level.addParticle(ParticleTypes.FLAME, px, py, pz, 0.0, 0.005, 0.0);
-            mc.level.addParticle(new DustParticleOptions(new Vector3f(1.0f, 0.45f, 0.1f), 0.9f), px, py, pz, 0.0, 0.0, 0.0);
-            return;
-        }
-
-        if (stack.is(Items.ENDER_PEARL) || stack.is(Items.ENDER_EYE) || stack.is(Items.CHORUS_FRUIT)) {
-            mc.level.addParticle(ParticleTypes.PORTAL, px, py, pz, velocity.x * -0.08, 0.02, velocity.z * -0.08);
-            return;
-        }
-
-        if (stack.is(Items.BLAZE_POWDER) || stack.is(Items.BLAZE_ROD)) {
-            mc.level.addParticle(ParticleTypes.FLAME, px, py, pz, 0.0, 0.01, 0.0);
-            return;
-        }
-
-        if (stack.is(Items.GLOWSTONE_DUST)) {
-            mc.level.addParticle(ParticleTypes.WAX_ON, px, py, pz, 0.0, 0.0, 0.0);
-            return;
-        }
-
-        if (stack.is(Items.REDSTONE)) {
-            mc.level.addParticle(new DustParticleOptions(new Vector3f(1.0f, 0.1f, 0.1f), 1.0f), px, py, pz, 0.0, 0.0, 0.0);
-            return;
-        }
-
-        if (stack.is(Items.AMETHYST_SHARD)) {
-            mc.level.addParticle(new DustParticleOptions(new Vector3f(0.78f, 0.45f, 1.0f), 0.9f), px, py, pz, 0.0, 0.0, 0.0);
-            return;
-        }
-
-        if (stack.is(Items.DIAMOND) || stack.is(Items.DIAMOND_BLOCK)) {
-            mc.level.addParticle(new DustParticleOptions(new Vector3f(0.25f, 0.95f, 1.0f), 0.9f), px, py, pz, 0.0, 0.0, 0.0);
-            return;
-        }
-
-        if (stack.is(Items.EMERALD) || stack.is(Items.EMERALD_BLOCK)) {
-            mc.level.addParticle(new DustParticleOptions(new Vector3f(0.2f, 0.95f, 0.45f), 0.9f), px, py, pz, 0.0, 0.0, 0.0);
-            return;
-        }
-
-        if (stack.is(Items.GOLD_INGOT) || stack.is(Items.GOLD_NUGGET) || stack.is(Items.GOLD_BLOCK) || stack.is(Items.RAW_GOLD)) {
-            mc.level.addParticle(new DustParticleOptions(new Vector3f(1.0f, 0.82f, 0.2f), 0.9f), px, py, pz, 0.0, 0.0, 0.0);
-            return;
-        }
-
-        if (stack.is(Items.IRON_INGOT) || stack.is(Items.IRON_NUGGET) || stack.is(Items.IRON_BLOCK) || stack.is(Items.RAW_IRON)) {
-            mc.level.addParticle(new DustParticleOptions(new Vector3f(0.82f, 0.84f, 0.88f), 0.85f), px, py, pz, 0.0, 0.0, 0.0);
-            return;
-        }
-
-        if (stack.is(Items.COPPER_INGOT) || stack.is(Items.COPPER_BLOCK) || stack.is(Items.RAW_COPPER)) {
-            mc.level.addParticle(new DustParticleOptions(new Vector3f(0.88f, 0.52f, 0.3f), 0.85f), px, py, pz, 0.0, 0.0, 0.0);
-            return;
-        }
-
-        if (stack.is(Items.NETHERITE_INGOT) || stack.is(Items.NETHERITE_SCRAP)) {
-            mc.level.addParticle(new DustParticleOptions(new Vector3f(0.32f, 0.32f, 0.36f), 0.85f), px, py, pz, 0.0, 0.0, 0.0);
-            return;
-        }
-
-        if (stack.is(Items.BONE)) {
-            mc.level.addParticle(new DustParticleOptions(new Vector3f(0.93f, 0.91f, 0.84f), 0.8f), px, py, pz, 0.0, 0.0, 0.0);
-            return;
-        }
-
-        if (stack.is(Items.ROTTEN_FLESH)) {
-            mc.level.addParticle(new DustParticleOptions(new Vector3f(0.45f, 0.62f, 0.22f), 0.8f), px, py, pz, 0.0, 0.0, 0.0);
-            return;
-        }
-
-        if (stack.is(Items.SPIDER_EYE) || stack.is(Items.FERMENTED_SPIDER_EYE)) {
-            mc.level.addParticle(new DustParticleOptions(new Vector3f(0.75f, 0.12f, 0.18f), 0.82f), px, py, pz, 0.0, 0.0, 0.0);
-            return;
-        }
-
-        if (stack.is(Items.PAPER)) {
-            mc.level.addParticle(new DustParticleOptions(new Vector3f(0.97f, 0.97f, 0.93f), 0.75f), px, py, pz, 0.0, 0.002, 0.0);
-            return;
-        }
-
-        if (stack.is(Items.BOOK) || stack.is(Items.WRITABLE_BOOK) || stack.is(Items.WRITTEN_BOOK) || stack.is(Items.ENCHANTED_BOOK)) {
-            mc.level.addParticle(new DustParticleOptions(new Vector3f(0.7f, 0.5f, 0.9f), 0.8f), px, py, pz, 0.0, 0.003, 0.0);
-            return;
-        }
-
-        if (stack.is(Items.LAPIS_LAZULI) || stack.is(Items.LAPIS_BLOCK)) {
-            mc.level.addParticle(new DustParticleOptions(new Vector3f(0.2f, 0.35f, 0.95f), 0.85f), px, py, pz, 0.0, 0.0, 0.0);
-            return;
-        }
-
-        if (stack.is(Items.QUARTZ) || stack.is(Items.QUARTZ_BLOCK)) {
-            mc.level.addParticle(new DustParticleOptions(new Vector3f(0.95f, 0.92f, 0.9f), 0.78f), px, py, pz, 0.0, 0.0, 0.0);
-            return;
-        }
-
-        if (stack.is(Items.COAL) || stack.is(Items.CHARCOAL) || stack.is(Items.COAL_BLOCK)) {
-            mc.level.addParticle(new DustParticleOptions(new Vector3f(0.18f, 0.18f, 0.2f), 0.82f), px, py, pz, 0.0, 0.0, 0.0);
-            return;
-        }
-
-        if (stack.is(Items.PRISMARINE_CRYSTALS) || stack.is(Items.HEART_OF_THE_SEA) || stack.is(Items.NAUTILUS_SHELL)) {
-            mc.level.addParticle(ParticleTypes.BUBBLE, px, py, pz, 0.0, 0.02, 0.0);
-            return;
-        }
-
-        if (stack.is(Items.ECHO_SHARD)) {
-            mc.level.addParticle(new DustParticleOptions(new Vector3f(0.15f, 0.65f, 0.9f), 0.9f), px, py, pz, 0.0, 0.0, 0.0);
-            return;
-        }
-
-        if (stack.is(Items.NETHER_STAR)) {
-            mc.level.addParticle(ParticleTypes.END_ROD, px, py, pz, 0.0, 0.01, 0.0);
-            return;
-        }
-
-        if (stack.is(Items.EXPERIENCE_BOTTLE)) {
-            mc.level.addParticle(ParticleTypes.HAPPY_VILLAGER, px, py, pz, 0.0, 0.02, 0.0);
-            return;
-        }
-
-        if (stack.is(Items.FEATHER)) {
-            mc.level.addParticle(ParticleTypes.CLOUD, px, py, pz, 0.0, 0.005, 0.0);
-            return;
-        }
-
-        if (stack.is(Items.HONEY_BOTTLE) || stack.is(Items.HONEYCOMB)) {
-            mc.level.addParticle(new DustParticleOptions(new Vector3f(0.95f, 0.7f, 0.15f), 0.9f), px, py, pz, 0.0, 0.0, 0.0);
-            return;
-        }
-
-        if (stack.is(ItemTags.MUSIC_DISCS)) {
-            mc.level.addParticle(ParticleTypes.NOTE, px, py, pz, 0.0, 0.0, 0.0);
-            return;
-        }
-
-        if (stack.is(Items.GLOW_INK_SAC)) {
-            mc.level.addParticle(ParticleTypes.GLOW, px, py, pz, 0.0, 0.0, 0.0);
         }
     }
 
