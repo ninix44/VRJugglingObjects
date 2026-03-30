@@ -1,4 +1,4 @@
-package your.mod.example.core.client.overlays;
+package org.vmstudio.jugglingobjects.core.client.overlays;
 
 import me.phoenixra.atumvr.api.misc.color.AtumColor;
 import org.vmstudio.visor.api.client.gui.overlays.RegisterVROverlayTemplate;
@@ -36,7 +36,7 @@ public class VROverlayTemplateExample extends VROverlayTemplateScreen {
     @Override
     protected void onRender(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTicks) {
         guiGraphics.drawCenteredString(this.font, text,
-                width/2, height/2, AtumColor.WHITE.asInt());
+                width / 2, height / 2, AtumColor.WHITE.asInt());
 
     }
 
@@ -50,13 +50,13 @@ public class VROverlayTemplateExample extends VROverlayTemplateScreen {
         return List.of(
                 new OverlayOptionsMisc(
                         this,
-                        it->{
+                        it -> {
                             it.setOptionsUpdaterType(OverlayOptionsMisc.OptionsUpdaterType.TICK);
                         }
                 ),
                 new OverlayOptionsPose(
                         this,
-                        it->{
+                        it -> {
                             it.setTickPose(true);
                             it.setAimedRotation(false);
                             it.setPositionAnchor(PoseAnchor.HMD);

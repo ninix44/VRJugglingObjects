@@ -1,32 +1,30 @@
 {
   "schemaVersion": 1,
-  "id": "visor_example",
+  "id": "jugglingobjects",
   "version": "${version}",
 
-  "name": "VisorExample",
-  "description": "The Example Addon for Visor",
+  "name": "VisorJugglingObjects",
+  "description": "Juggling Objects Addon for Visor",
   "authors": [
-    "PhoenixRa"
+    "Ninix"
   ],
   "license": "MIT",
   "environment": "*",
   "entrypoints": {
     "main": [
-      "your.mod.example.fabric.ExampleMod"
+      "org.vmstudio.jugglingobjects.fabric.ExampleMod"
     ]
   },
   "mixins": [
-    "mod.mixins.json"
+    "jugglingobjects.mixins.json"
   ],
   "depends": {
     "fabricloader": ">=0.14.14",
     "minecraft": ["1.20", "1.20.1"],
-    "java": ">=17"
-  },
-  "breaks": {
-    "visor": "<0.2.0"
+    "java": ">=17",
+    "visor": "*"
   },
   "suggests": {
-    "another-mod": "*"
+    "sodium": ">=0.5.0"
   }
 }

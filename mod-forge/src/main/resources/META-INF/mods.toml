@@ -3,31 +3,31 @@ loaderVersion = "[46,)"
 license = "MIT"
 
 [[mods]]
-modId = "visor_example"
+modId = "jugglingobjects"
 version = "${version}"
-displayName = "VisorExample"
-authors = "PhoenixRa"
+displayName = "VisorJugglingObjects"
+authors = "Ninix"
 displayTest = "NONE"
 description = '''
-The Example Addon for Visor
+Juggling Objects Addon for Visor
 
 '''
 
-[[dependencies.visor_example]]
+[[dependencies.jugglingobjects]]
 modId = "visor"
 mandatory = true
 versionRange = "[0.2.0-alpha,)"
 ordering = "AFTER"
 side = "BOTH"
 
-[[dependencies.visor_example]]
+[[dependencies.jugglingobjects]]
 modId = "forge"
 mandatory = true
 versionRange = "[46,)"
 ordering = "AFTER"
 side = "BOTH"
 
-[[dependencies.visor_example]]
+[[dependencies.jugglingobjects]]
 modId = "minecraft"
 mandatory = true
 versionRange = "[1.20,1.20.1]"
