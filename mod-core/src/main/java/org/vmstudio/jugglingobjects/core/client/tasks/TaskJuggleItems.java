@@ -27,12 +27,19 @@ import org.vmstudio.visor.api.client.player.pose.PlayerPoseType;
 import org.vmstudio.visor.api.client.tasks.RegisterVisorTask;
 import org.vmstudio.visor.api.client.tasks.TaskType;
 import org.vmstudio.visor.api.client.tasks.VisorTask;
+import org.vmstudio.visor.api.client.gui.overlays.VROverlay;
 import org.vmstudio.visor.api.common.HandType;
 import org.vmstudio.visor.api.common.addon.VisorAddon;
 
 @RegisterVisorTask
 public class TaskJuggleItems extends VisorTask {
     public static final String ID = "juggle_items";
+    private static final String OVERLAY_HOTBAR_MAIN = "hotbar_mainhand";
+    private static final String OVERLAY_HOTBAR_OFF = "hotbar_offhand";
+    private static final String OVERLAY_GAME_SCREEN = "game_screen";
+    private static final String OVERLAY_KEYBOARD = "keyboard";
+    private static final String OVERLAY_SETTINGS = "settings";
+    private static final String OVERLAY_OPTIONS_MENU = "options_menu";
 
     private static final double TOSS_THRESHOLD = 0.15;
     private static final double PULL_RANGE = 0.8;
@@ -51,7 +58,12 @@ public class TaskJuggleItems extends VisorTask {
     @Override
     protected void onRun(@Nullable LocalPlayer player) {
         Minecraft mc = Minecraft.getInstance();
-        if (player == null || mc.level == null || mc.isPaused() || mc.screen != null) {
+        if (player == null || mc.level == null || mc.isPaused()) {
+            return;
+        }
+
+        if (isGuiInteractionBlocked(mc)) {
+            onClear(player);
             return;
         }
 
@@ -221,6 +233,14 @@ public class TaskJuggleItems extends VisorTask {
     }
 
     private void spawnTrailParticles(Minecraft mc, ItemEntity item) {
+        if (item.onGround()) {
+            return;
+        }
+
+        if (item.getDeltaMovement().lengthSqr() < 0.0025) {
+            return;
+        }
+
         if (item.tickCount % TRAIL_INTERVAL != 0) {
             return;
         }
@@ -460,5 +480,27 @@ public class TaskJuggleItems extends VisorTask {
 
     private Vec3 jomlToVec3(Vector3fc vec) {
         return new Vec3(vec.x(), vec.y(), vec.z());
+    }
+
+    private boolean isGuiInteractionBlocked(Minecraft mc) {
+        if (mc.screen != null) {
+            return true;
+        }
+
+        var guiManager = VisorAPI.client().getGuiManager();
+        if (guiManager.getCursorHandler().isAnyHandFocused()) {
+            return true;
+        }
+
+        return isOverlayVisible(guiManager.getOverlayManager().getOverlay(OVERLAY_HOTBAR_MAIN))
+                || isOverlayVisible(guiManager.getOverlayManager().getOverlay(OVERLAY_HOTBAR_OFF))
+                || isOverlayVisible(guiManager.getOverlayManager().getOverlay(OVERLAY_GAME_SCREEN))
+                || isOverlayVisible(guiManager.getOverlayManager().getOverlay(OVERLAY_KEYBOARD))
+                || isOverlayVisible(guiManager.getOverlayManager().getOverlay(OVERLAY_SETTINGS))
+                || isOverlayVisible(guiManager.getOverlayManager().getOverlay(OVERLAY_OPTIONS_MENU));
+    }
+
+    private boolean isOverlayVisible(VROverlay overlay) {
+        return overlay != null && overlay.isVisible();
     }
 }
